@@ -36,7 +36,9 @@ public:
     
     uniq_ptr& operator=(const uniq_ptr&) = delete;
 
+    T* operator->();
     T& operator*();
+    T& operator[](size_t index) const;
 
     operator bool() const;
 
