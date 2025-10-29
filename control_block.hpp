@@ -1,14 +1,9 @@
-template <typename T>
 struct control_block
 {
-    int strongrf_count;
-    int weakrf_count;
+    long strongrf_count;
+    long weakrf_count;
 
-    explicit control_block();
+    control_block() : strongrf_count(0), weakrf_count(0) {};
+    control_block(long strong, long weak) : strongrf_count(strong), weakrf_count(weak) {};
     ~control_block() = default;
-
-    void add_strongrf();
-    void add_weakrf();
-    void subtract_strongrf();
-    void subtract_weakrf();
-}
+};

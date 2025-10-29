@@ -4,7 +4,7 @@ template <typename T>
 shared_ptr<T>::shared_ptr() : ptr(nullptr), ref_count(nullptr) {}
 
 template <typename T> 
-shared_ptr<T>::shared_ptr(T* ptr) : ptr(ptr)
+shared_ptr<T>::shared_ptr(T* ptr) : ptr(ptr), cb(new control_block(1,0)) {}
 {
     if (ptr) {
         count = new int(1);
@@ -14,7 +14,7 @@ shared_ptr<T>::shared_ptr(T* ptr) : ptr(ptr)
 }
 
 template <typename T> 
-shared_ptr<T>::shared_ptr(const shared_ptr& other) : ptr(other.ptr), count(other.count)
+shared_ptr<T>::shared_ptr(const shared_ptr& other) : ptr(other.ptr), cb(other.cb) {}
 {
     if (count) {
         ++(*count);
@@ -22,20 +22,23 @@ shared_ptr<T>::shared_ptr(const shared_ptr& other) : ptr(other.ptr), count(other
 }
 
 template <typename T>
-shared_ptr<T>::shared_ptr(shared_ptr&& other) : ptr(other.ptr), count(other.count)
+shared_ptr<T>::shared_ptr(shared_ptr&& other) : ptr(other.ptr), cb(other.cb) {}
 {
     other.ptr = nullptr;
-    other.count = nullptr;
+    other.cb = nullptr;
 }
+
+template <typename T>
+shared_ptr<T>::shared_ptr(uniq_ptr<T>&& other) : ptr(other.release()), cb(new control_block(1, 0)) {}
 
 template <typename T>
 shared_ptr<T>::~shared_ptr()
 {
-    if (count) {
-        --(*count);
-        if (*count == 0) {
+    if (cb->strongrf_count != 0) {
+        cb->strongrf_count--;
+        if (cb->strongrf_count == 0) {
             delete ptr;
-            delete count;
+            delete cb;
         }
     }
 }
@@ -80,7 +83,7 @@ shared_ptr<T>& shared_ptr<T>::operator=(shared_ptr&& other)
 }
 
 template <typename T>
-T* shared_ptr<T>::operator->()
+T* shared_ptr<T>::operator->() const
 {
     return ptr;
 }
@@ -94,11 +97,52 @@ T& shared_ptr<T>::operator*()
 template <typename T>
 T& shared_ptr<T>::operator[](int index)
 {
+    if (index < 0 || index >= size) {
+        throw std::out_of_range("Index out of range");
+    }
     return ptr[index];
 }
 
 template <typename T>
-T* shared_ptr<T>::release()
+shared_ptr<T>::operator bool() const
 {
-    //return ptr;
+    return ptr != nullptr;
+}
+
+template <typename T>
+T* shared_ptr<T>::get() const
+{
+    return ptr;
+}
+
+template <typename T>
+int shared_ptr<T>::use_count() const
+{
+    return cb->strongrf_count;
+}
+
+template <typename T>
+bool shared_ptr<T>::is_unique() const
+{
+    return cb->strongrf_count == 1;
+}
+
+template <typename T>
+void shared_ptr<T>::reset(T* other_ptr)
+{
+    if (cb->strongrf_count != 0) {
+        cb->strongrf_count--;
+    }
+    delete ptr;
+    delete cb;
+    cb(1, 0);
+    ptr = other_ptr;
+    other_ptr = nullptr;
+}
+
+template <typename T>
+void shared_ptr<T>::swap(shared_ptr& other)
+{
+    std::swap(ptr, other.ptr);
+    std::swap(cb, other.cb);
 }

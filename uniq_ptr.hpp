@@ -25,24 +25,27 @@ class uniq_ptr
 private:
     T* pointer;
     deleter deleter__;
+private:
+    uniq_ptr(T* ptr);
+
 public:
     uniq_ptr();
-    explicit uniq_ptr(T* ptr);
     uniq_ptr(uniq_ptr&& other);
-    template <typename U, typename other_deleter>
-    uniq_ptr(uniq_ptr<U, other_deleter>&& other);
     uniq_ptr(const uniq_ptr&) = delete;
     ~uniq_ptr();
-    
-    uniq_ptr& operator=(const uniq_ptr&) = delete;
 
-    T* operator->();
+    deleter& get_deleter();
+
+    uniq_ptr& operator=(const uniq_ptr&) = delete;
+    uniq_ptr& operator=(uniq_ptr&& other);
+
+    T* operator->() const;
     T& operator*();
-    T& operator[](size_t index) const;
+    T& operator[](int index);
 
     operator bool() const;
 
-    const T* get();
+    T* get() const;
     T* release();
 
     void reset(T* ptr);

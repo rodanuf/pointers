@@ -16,14 +16,10 @@ template <typename T, typename deleter>
 uniq_ptr<T, deleter>::uniq_ptr(T* ptr) : pointer(ptr), deleter__() {}
 
 template <typename T, typename deleter>
-uniq_ptr<T, deleter>::uniq_ptr(uniq_ptr &&other) : pointer(other.pointer), deleter__(std::move(other.deleter__))
+uniq_ptr<T, deleter>::uniq_ptr(uniq_ptr &&other) : pointer(other.pointer), deleter__(std::move(other.get_deleter()))
 {
     other.pointer = nullptr;
 }
-
-template <typename T, typename deleter>
-template <typename U, typename other_deleter>
-uniq_ptr<T, deleter>::uniq_ptr(uniq_ptr<U, other_deleter>&& other) : pointer(other.realese()), deleter__(std::move(other.deleter__)) {}
 
 template <typename T, typename deleter>
 uniq_ptr<T, deleter>::~uniq_ptr()
@@ -35,9 +31,44 @@ uniq_ptr<T, deleter>::~uniq_ptr()
 }
 
 template <typename T, typename deleter>
+deleter& uniq_ptr<T, deleter>::get_deleter()
+{
+    return deleter__;
+}
+
+template <typename T, typename deleter>
+uniq_ptr<T, deleter>& uniq_ptr<T, deleter>::operator=(uniq_ptr&& other)
+{
+    if (pointer != nullptr)
+    {
+        deleter__(pointer);
+    }
+    pointer = other.pointer;
+    deleter__ = std::move(other.get_deleter());
+    other.pointer = nullptr;
+    return *this;
+}
+
+template <typename T, typename deleter>
+T* uniq_ptr<T, deleter>::operator->() const
+{
+    return pointer;
+}
+
+template <typename T, typename deleter>
 T& uniq_ptr<T, deleter>::operator*()
 {
     return *pointer;
+}
+
+template <typename T, typename deleter>
+T& uniq_ptr<T, deleter>::operator[](int index)
+{
+    if (index < 0 || index >= sizeof(pointer))
+    {
+        throw std::out_of_range("Index out of range");
+    }
+    return pointer[index];
 }
 
 template <typename T, typename deleter>
@@ -47,7 +78,7 @@ uniq_ptr<T, deleter>::operator bool() const
 }
 
 template <typename T, typename deleter>
-const T* uniq_ptr<T, deleter>::get()
+T* uniq_ptr<T, deleter>::get() const
 {
     return pointer;
 }
@@ -90,7 +121,8 @@ void uniq_ptr<T, deleter>::clear()
 template <typename T>
 uniq_ptr<T, default_deleter<T>> make_uniq_from(T*& ptr)
 {
-    uniq_ptr<T, default_deleter<T>> uptr__(ptr);
+    uniq_ptr<T, default_deleter<T>> uptr__;
+    uptr__.reset(ptr);
     ptr = nullptr;
     return uptr__;
 }
@@ -100,6 +132,8 @@ uniq_ptr<T, malloc_deleter<T>> make_uniq_from(const T& obj)
 {
     T* ptr = (T*)malloc(sizeof(T));
     new (ptr) T(std::move(obj)); //placement_new (не выделение памяти, а создание объекта на уже выделенной)
-    uniq_ptr<T, malloc_deleter<T>> uptr__(ptr);    
+    uniq_ptr<T, malloc_deleter<T>> uptr__;
+    uptr__.reset(ptr);  
+    ptr = nullptr;  
     return uptr__;
 }
