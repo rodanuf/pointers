@@ -47,9 +47,9 @@ template <typename T>
 shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr& other)
 {
     if (this != &other) {
-        if (count) {
-            --(*count);
-            if (*count == 0) {
+        if (cb->strongrf_count != 0) {
+            cb->strongrf_count--;
+            if (cb->strongrf_count == 0) {
                 delete ptr;
                 delete count;
             }
@@ -67,9 +67,9 @@ template <typename T>
 shared_ptr<T>& shared_ptr<T>::operator=(shared_ptr&& other)
 {
     if (this != &other) {
-        if (count) {
-            --(*count);
-            if (*count == 0) {
+        if (cb->strongrf_count != 0) {
+            cb->strongrf_count--;
+            if (cb->strongrf_count == 0) {
                 delete ptr;
                 delete count;
             }
@@ -135,7 +135,7 @@ void shared_ptr<T>::reset(T* other_ptr)
     }
     delete ptr;
     delete cb;
-    cb(1, 0);
+    cb(new control_block(1, 0) );
     ptr = other_ptr;
     other_ptr = nullptr;
 }
