@@ -8,7 +8,7 @@ option(BUILD_GMOCK "Build gmock" OFF)
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
 add_executable(tests
-    test_uniq_ptr.cpp
+    tests.cpp
 )
 
 target_link_libraries(tests PRIVATE gtest gtest_main)

@@ -126,14 +126,3 @@ uniq_ptr<T, default_deleter<T>> make_uniq_from(T*& ptr)
     ptr = nullptr;
     return uptr__;
 }
-
-template <typename T>
-uniq_ptr<T, malloc_deleter<T>> make_uniq_from(const T& obj)
-{
-    T* ptr = (T*)malloc(sizeof(T));
-    new (ptr) T(std::move(obj)); //placement_new (не выделение памяти, а создание объекта на уже выделенной)
-    uniq_ptr<T, malloc_deleter<T>> uptr__;
-    uptr__.reset(ptr);  
-    ptr = nullptr;  
-    return uptr__;
-}

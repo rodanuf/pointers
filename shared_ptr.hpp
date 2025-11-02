@@ -37,10 +37,6 @@ public:
     void reset(T* other_ptr);
     void swap(shared_ptr &other);
 
-
 };
-
-template <typename T>
-shared_ptr<T> make_shared_from(T& obj);
 
 #include "shared_ptr.tpp"

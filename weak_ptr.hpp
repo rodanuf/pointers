@@ -7,16 +7,16 @@ template <typename T>
 class weak_ptr
 {
 private:
-    T& _ptr;
+    T& ptr;
     control_block* cb;
-private:
-    weak_ptr(const shared_ptr<T>& ptr);
 public:
     weak_ptr();
-    weak_ptr(const weak_ptr<T>& ptr);
-    weak_ptr(weak_ptr<T>&& ptr);
+    weak_ptr(const shared_ptr<T>& other);
+    weak_ptr(const weak_ptr<T>& other);
+    weak_ptr(weak_ptr<T>&& other);
+    ~weak_ptr();
 
-    weak_ptr& operator=(const weak_ptr<T>& ptr);
+    weak_ptr& operator=(const weak_ptr<T>& other);
 
     bool expired() const;
 
@@ -26,3 +26,5 @@ public:
 
     void swap(weak_ptr<T>& ptr);
 };
+
+#include "weak_ptr.tpp"

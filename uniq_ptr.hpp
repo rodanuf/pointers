@@ -56,8 +56,5 @@ public:
 template <typename T, typename deleter>
 uniq_ptr<T, deleter> make_uniq_ptr(T*& ptr);
 
-template <typename T, typename deleter>
-uniq_ptr<T, deleter> make_uniq_ptr(T& obj);
-
 
 #include "uniq_ptr.tpp"

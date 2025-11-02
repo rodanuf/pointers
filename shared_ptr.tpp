@@ -1,28 +1,19 @@
 #include "shared_ptr.hpp"
 
 template <typename T>
-shared_ptr<T>::shared_ptr() : ptr(nullptr), ref_count(nullptr) {}
+shared_ptr<T>::shared_ptr() : ptr(nullptr), cb(nullptr) {}
 
 template <typename T> 
 shared_ptr<T>::shared_ptr(T* ptr) : ptr(ptr), cb(new control_block(1,0)) {}
-{
-    if (ptr) {
-        count = new int(1);
-    } else {
-        count = nullptr;
-    }
-}
 
 template <typename T> 
-shared_ptr<T>::shared_ptr(const shared_ptr& other) : ptr(other.ptr), cb(other.cb) {}
+shared_ptr<T>::shared_ptr(const shared_ptr& other) : ptr(other.ptr), cb(other.cb)
 {
-    if (count) {
-        ++(*count);
-    }
+    cb->strongrf_count++;
 }
 
 template <typename T>
-shared_ptr<T>::shared_ptr(shared_ptr&& other) : ptr(other.ptr), cb(other.cb) {}
+shared_ptr<T>::shared_ptr(shared_ptr&& other) : ptr(other.ptr), cb(other.cb)
 {
     other.ptr = nullptr;
     other.cb = nullptr;
@@ -34,11 +25,20 @@ shared_ptr<T>::shared_ptr(uniq_ptr<T>&& other) : ptr(other.release()), cb(new co
 template <typename T>
 shared_ptr<T>::~shared_ptr()
 {
-    if (cb->strongrf_count != 0) {
+    if (cb == nullptr)
+    {
+        return;
+    }
+    if (cb->strongrf_count != 0)
+    {
         cb->strongrf_count--;
-        if (cb->strongrf_count == 0) {
+        if (cb->strongrf_count == 0)
+        {
             delete ptr;
-            delete cb;
+            if (cb->weakrf_count == 0)
+            {
+                delete cb;
+            }
         }
     }
 }
@@ -46,39 +46,16 @@ shared_ptr<T>::~shared_ptr()
 template <typename T>
 shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr& other)
 {
-    if (this != &other) {
-        if (cb->strongrf_count != 0) {
-            cb->strongrf_count--;
-            if (cb->strongrf_count == 0) {
-                delete ptr;
-                delete count;
-            }
-        }
-        ptr = other.ptr;
-        count = other.count;
-        if (count) {
-            ++(*count);
-        }
-    }
+    shared_ptr tmp(other);
+    this->swap(tmp);
     return *this;
 }
 
 template <typename T>
 shared_ptr<T>& shared_ptr<T>::operator=(shared_ptr&& other)
 {
-    if (this != &other) {
-        if (cb->strongrf_count != 0) {
-            cb->strongrf_count--;
-            if (cb->strongrf_count == 0) {
-                delete ptr;
-                delete count;
-            }
-        }
-        ptr = other.ptr;
-        count = other.count;
-        other.ptr = nullptr;
-        other.count = nullptr;
-    }
+    this->~shared_ptr();
+    new (this) shared_ptr(std::move(other));
     return *this;
 }
 
@@ -97,7 +74,8 @@ T& shared_ptr<T>::operator*()
 template <typename T>
 T& shared_ptr<T>::operator[](int index)
 {
-    if (index < 0 || index >= size) {
+    if (index < 0) 
+    {
         throw std::out_of_range("Index out of range");
     }
     return ptr[index];
@@ -130,12 +108,16 @@ bool shared_ptr<T>::is_unique() const
 template <typename T>
 void shared_ptr<T>::reset(T* other_ptr)
 {
-    if (cb->strongrf_count != 0) {
+    if (cb->strongrf_count != 0)
+    {
         cb->strongrf_count--;
     }
-    delete ptr;
-    delete cb;
-    cb(new control_block(1, 0) );
+    ptr = nullptr;
+    if (cb->weakrf_count == 0 && cb->strongrf_count == 0)
+    {
+        delete cb;
+    }
+    cb = new control_block(1, 0);
     ptr = other_ptr;
     other_ptr = nullptr;
 }

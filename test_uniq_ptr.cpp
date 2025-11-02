@@ -75,10 +75,3 @@ TEST(uniq_ptr_test, move_constructor_test)
     uniq_ptr<int> ptr = make_uniq_from(p);
     ASSERT_EQ(*ptr, 5);
 }
-
-TEST(uniq_ptr_test, constructor_from_object_test)
-{
-    int a = 5;
-    auto ptr = make_uniq_from(a);
-    ASSERT_EQ(*ptr, 5);
-}
