@@ -38,8 +38,16 @@ weak_ptr<T>::~weak_ptr()
 template <typename T>
 weak_ptr<T>& weak_ptr<T>::operator=(const weak_ptr<T>& other)
 {
+    this->ptr = other.ptr;
+    this->cb->weakrf_count++;
+    return *this;
+}
+
+template <typename T>
+weak_ptr<T>& weak_ptr<T>::operator=(const shared_ptr<T>& other)
+{
     weak_ptr tmp(other);
-    this->swap(other);
+    this->swap(tmp);
     return *this;
 }
 

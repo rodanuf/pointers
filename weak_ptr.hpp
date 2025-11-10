@@ -7,7 +7,7 @@ template <typename T>
 class weak_ptr
 {
 private:
-    T& ptr;
+    T* ptr;
     control_block* cb;
 public:
     weak_ptr();
@@ -17,6 +17,7 @@ public:
     ~weak_ptr();
 
     weak_ptr& operator=(const weak_ptr<T>& other);
+    weak_ptr& operator=(const shared_ptr<T>& other);
 
     bool expired() const;
 
