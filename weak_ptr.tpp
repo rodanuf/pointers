@@ -28,7 +28,7 @@ weak_ptr<T>::~weak_ptr()
     if (cb != nullptr)
     {
         cb->weakrf_count--;
-        if (cb->weakrf_count == 0 && cb->rf_count == 0)
+        if (cb->weakrf_count == 0 && cb->strongrf_count == 0)
         {
             delete cb;
         }
