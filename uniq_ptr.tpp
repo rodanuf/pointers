@@ -62,6 +62,12 @@ T& uniq_ptr<T, deleter>::operator*()
 }
 
 template <typename T, typename deleter>
+const T& uniq_ptr<T, deleter>::operator*() const
+{
+    return *pointer;
+}
+
+template <typename T, typename deleter>
 T& uniq_ptr<T, deleter>::operator[](int index)
 {
     if (index < 0 || index >= sizeof(pointer))
