@@ -1,3 +1,5 @@
+#pragma once
+
 struct control_block
 {
     long strongrf_count;
