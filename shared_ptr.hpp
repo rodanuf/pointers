@@ -24,7 +24,9 @@ public:
     T* operator->() const;
 
     T& operator*();
+    const T& operator*() const;
     T& operator[](int index);
+    const T& operator[](int index) const;
 
     operator bool() const;
 

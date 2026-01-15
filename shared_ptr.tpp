@@ -72,9 +72,25 @@ T& shared_ptr<T>::operator*()
 }
 
 template <typename T>
+const T& shared_ptr<T>::operator*() const
+{
+    return *ptr;
+}
+
+template <typename T>
 T& shared_ptr<T>::operator[](int index)
 {
     if (index < 0) 
+    {
+        throw std::out_of_range("Index out of range");
+    }
+    return ptr[index];
+}
+
+template <typename T>
+const T& shared_ptr<T>::operator[](int index) const
+{
+    if (index < 0)
     {
         throw std::out_of_range("Index out of range");
     }
