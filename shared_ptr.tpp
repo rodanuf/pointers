@@ -9,7 +9,10 @@ shared_ptr<T>::shared_ptr(T* ptr) : ptr(ptr), cb(new control_block(1,0)) {}
 template <typename T> 
 shared_ptr<T>::shared_ptr(const shared_ptr& other) : ptr(other.ptr), cb(other.cb)
 {
-    cb->strongrf_count++;
+    if (cb != nullptr)
+    {
+        cb->strongrf_count++;
+    }
 }
 
 template <typename T>
